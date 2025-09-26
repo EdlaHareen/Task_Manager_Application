@@ -120,4 +120,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Live Demo
 
-View the live application: [Task Manager Demo](https://progress-tracking-ta-sqgw.bolt.host)
+🚀 **[View Live Demo](https://progress-tracking-ta-sqgw.bolt.host/)**
+
+Experience the full functionality of the Task Manager application with this live deployment.
