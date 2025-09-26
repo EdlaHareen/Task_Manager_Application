@@ -3,12 +3,20 @@ import { Plus, Filter, Search } from 'lucide-react';
 import { TaskCard } from './components/TaskCard';
 import { TaskForm } from './components/TaskForm';
 import { TaskStats } from './components/TaskStats';
+import { AuthForm } from './components/AuthForm';
+import { Header } from './components/Header';
+import { LoadingSpinner } from './components/LoadingSpinner';
 import { useTasks } from './hooks/useTasks';
+import { useAuth } from './hooks/useAuth';
 import { Task } from './types/task';
 
 function App() {
+  const { user, loading: authLoading } = useAuth();
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+
   const {
     tasks,
+    loading: tasksLoading,
     addTask,
     updateTask,
     deleteTask,
@@ -21,6 +29,21 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all');
   const [filterPriority, setFilterPriority] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+
+  // Show loading spinner while checking authentication
+  if (authLoading) {
+    return <LoadingSpinner />;
+  }
+
+  // Show auth form if user is not authenticated
+  if (!user) {
+    return (
+      <AuthForm 
+        mode={authMode} 
+        onToggleMode={() => setAuthMode(authMode === 'signin' ? 'signup' : 'signin')} 
+      />
+    );
+  }
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
@@ -61,12 +84,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Task Manager</h1>
+              <h1 className="text-3xl font-bold text-gray-900">My Tasks</h1>
               <p className="text-gray-600 mt-1">Organize your tasks and track your progress</p>
             </div>
             <button
@@ -130,7 +154,12 @@ function App() {
 
         {/* Task List */}
         <div className="space-y-4">
-          {filteredTasks.length === 0 ? (
+          {tasksLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading your tasks...</p>
+            </div>
+          ) : filteredTasks.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
