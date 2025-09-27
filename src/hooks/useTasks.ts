@@ -17,6 +17,7 @@ export const useTasks = () => {
     }
 
     try {
+      console.log('🔄 Loading tasks for user:', user.id);
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
@@ -24,9 +25,14 @@ export const useTasks = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading tasks:', error);
+        console.error('❌ Error loading tasks:', error);
+        if (error.message === 'Supabase connection failed') {
+          console.warn('⚠️ Using fallback mode - tasks will not persist');
+        }
+        setTasks([]);
       } else {
-        const formattedTasks: Task[] = data.map(task => ({
+        console.log('✅ Tasks loaded successfully:', data?.length || 0, 'tasks');
+        const formattedTasks: Task[] = (data || []).map(task => ({
           id: task.id,
           title: task.title,
           description: task.description || undefined,
@@ -40,7 +46,8 @@ export const useTasks = () => {
         setTasks(formattedTasks);
       }
     } catch (error) {
-      console.error('Error loading tasks:', error);
+      console.error('❌ Exception loading tasks:', error);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -71,6 +78,7 @@ export const useTasks = () => {
 
       if (error) {
         console.error('Error adding task:', error);
+        throw error;
       } else {
         const newTask: Task = {
           id: data.id,
@@ -87,6 +95,7 @@ export const useTasks = () => {
       }
     } catch (error) {
       console.error('Error adding task:', error);
+      throw error;
     }
   };
 
@@ -110,6 +119,7 @@ export const useTasks = () => {
 
       if (error) {
         console.error('Error updating task:', error);
+        throw error;
       } else {
         setTasks(prev =>
           prev.map(task =>
@@ -119,6 +129,7 @@ export const useTasks = () => {
       }
     } catch (error) {
       console.error('Error updating task:', error);
+      throw error;
     }
   };
 
@@ -134,11 +145,13 @@ export const useTasks = () => {
 
       if (error) {
         console.error('Error deleting task:', error);
+        throw error;
       } else {
         setTasks(prev => prev.filter(task => task.id !== id));
       }
     } catch (error) {
       console.error('Error deleting task:', error);
+      throw error;
     }
   };
 

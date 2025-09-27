@@ -11,6 +11,7 @@ import { useAuth } from './hooks/useAuth';
 import { Task } from './types/task';
 
 function App() {
+  // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
   const { user, loading: authLoading } = useAuth();
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 
@@ -30,22 +31,9 @@ function App() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all');
   const [filterPriority, setFilterPriority] = useState<'all' | 'high' | 'medium' | 'low'>('all');
 
-  // Show loading spinner while checking authentication
-  if (authLoading) {
-    return <LoadingSpinner />;
-  }
-
-  // Show auth form if user is not authenticated
-  if (!user) {
-    return (
-      <AuthForm 
-        mode={authMode} 
-        onToggleMode={() => setAuthMode(authMode === 'signin' ? 'signup' : 'signin')} 
-      />
-    );
-  }
-
+  // useMemo must be called unconditionally
   const filteredTasks = useMemo(() => {
+    if (!user) return []; // Return empty array if no user
     return tasks.filter(task => {
       const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,8 +47,9 @@ function App() {
       
       return matchesSearch && matchesStatus && matchesPriority;
     });
-  }, [tasks, searchTerm, filterStatus, filterPriority]);
+  }, [tasks, searchTerm, filterStatus, filterPriority, user]);
 
+  // All other hooks and functions
   const handleSubmit = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     if (editingTask) {
       updateTask(editingTask.id, taskData);
@@ -81,6 +70,22 @@ function App() {
   };
 
   const stats = getTaskStats();
+
+  // NOW we can do conditional returns after all hooks are called
+  // Show loading spinner while checking authentication
+  if (authLoading) {
+    return <LoadingSpinner />;
+  }
+
+  // Show auth form if user is not authenticated
+  if (!user) {
+    return (
+      <AuthForm 
+        mode={authMode} 
+        onToggleMode={() => setAuthMode(authMode === 'signin' ? 'signup' : 'signin')} 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

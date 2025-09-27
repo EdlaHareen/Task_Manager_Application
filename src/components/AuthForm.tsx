@@ -28,7 +28,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onToggleMode }) => {
       if (error) {
         setError(error.message);
       } else if (mode === 'signup') {
-        setError('Check your email for the confirmation link!');
+        setError('Check your email for the confirmation link! You can sign in after confirming your email.');
       }
     } catch (err) {
       setError('An unexpected error occurred');
